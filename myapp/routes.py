@@ -69,11 +69,16 @@ def load_questions():
             questions.append(cleaned_row)
     return questions
 
-# Revised Quiz Route with Endless Quiz and an Exit Button
+# Revised Quiz Route with Endless Quiz, an Exit Button, and Stats Tracking
 @main.route("/quiz", methods=["GET", "POST"])
 @login_required
 def quiz():
-    # Load questions if not already in session
+    # Initialize stats in session if not already present.
+    # Stats dictionary tracks total answers, correct answers, and incorrect answers.
+    if "stats" not in session:
+        session["stats"] = {"total": 0, "correct": 0, "incorrect": 0}
+
+    # Load questions if not already in session.
     if "quiz_questions" not in session:
         raw_questions = load_questions()
         simple_questions = []
@@ -86,7 +91,7 @@ def quiz():
                 q.get("option_c", ""),
                 q.get("option_d", "")
             ]
-            # Determine the correct answer text. If correct_answer is A-D then pick the corresponding option.
+            # Determine the correct answer text.
             correct_answer_raw = q.get("correct_answer", "").strip()
             if correct_answer_raw.upper() in ["A", "B", "C", "D"]:
                 mapping_index = {"A": 0, "B": 1, "C": 2, "D": 3}
@@ -111,7 +116,7 @@ def quiz():
     idx = session.get("current_question_idx", 0)
     questions = session.get("quiz_questions")
 
-    # Endless Quiz Logic:
+    # Endless Quiz Logic: reshuffle if end is reached.
     if idx >= len(questions):
         flash("You've answered all questions! Restarting the quiz.", "info")
         random.shuffle(questions)
@@ -121,12 +126,12 @@ def quiz():
 
     current_q = questions[idx]
 
-    # Randomize the order of the options.
+    # Randomize the options order.
     randomized_answers = current_q["options"].copy()
     random.shuffle(randomized_answers)
 
     if request.method == "POST":
-        # Check if the user clicked the "Exit" button.
+        # Exit button functionality.
         if "exit" in request.form:
             session.pop("quiz_questions", None)
             session.pop("current_question_idx", None)
@@ -134,13 +139,19 @@ def quiz():
             flash("You have exited the quiz.")
             return redirect(url_for("main.home"))
 
-        # Process the submitted answer.
+        # Process the answer.
         selected_answer = request.form.get("answer")
-        explanation = current_q["explanation"]
+        # Update stats.
+        stats = session.get("stats", {"total": 0, "correct": 0, "incorrect": 0})
+        stats["total"] += 1
         if selected_answer == current_q["correct_answer"]:
+            stats["correct"] += 1
             feedback = "✅ Correct!"
         else:
-            feedback = f"❌ Incorrect: {explanation}"
+            stats["incorrect"] += 1
+            feedback = f"❌ Incorrect: {current_q['explanation']}"
+        session["stats"] = stats
+
         session["last_feedback"] = feedback
         session["current_question_idx"] = idx + 1
         return redirect(url_for("main.quiz"))
@@ -150,3 +161,13 @@ def quiz():
                            question=current_q["question"],
                            answers=randomized_answers,
                            feedback=feedback)
+
+# ------------------------------------------------------------------
+# STATS ROUTE
+# ------------------------------------------------------------------
+@main.route("/stats")
+@login_required
+def stats():
+    # Retrieve the stats from the session. If none exist, set defaults.
+    stats = session.get("stats", {"total": 0, "correct": 0, "incorrect": 0})
+    return render_template("stats.html", stats=stats)
