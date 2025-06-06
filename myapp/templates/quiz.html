@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="quiz-container">
+    {% if feedback %}
+        <!-- Show the feedback from the previous question and a Next button -->
+        <div class="feedback">
+            <h2>{{ feedback }}</h2>
+        </div>
+        <form method="get" action="{{ url_for('main.quiz') }}">
+            <button type="submit" class="next-btn">Next</button>
+        </form>
+    {% else %}
+        <!-- Display the current quiz question and answer buttons -->
+        <div class="question">
+            <h2>{{ question }}</h2>
+        </div>
+        <form method="post" action="{{ url_for('main.quiz') }}">
+            <div class="answers">
+                {% for answer in answers %}
+                    <button type="submit" name="answer" value="{{ answer }}" class="answer-btn">
+                        {{ answer }}
+                    </button>
+                {% endfor %}
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}
