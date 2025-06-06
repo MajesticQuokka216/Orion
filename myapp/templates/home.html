@@ -1,6 +1,24 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
 {% block content %}
-  <h1>Welcome to the Home Page!</h1>
-  <p>This is your landing page for the Flask application. Customize this page as needed.</p>
-{% endblock %}
+<div class="jumbotron text-center mt-4" style="background-color: #c9c3f0;">
+    <h1 class="display-4">Welcome to Orion!</h1>
+    <p class="lead">Test your knowledge on Physics Module 8</p>
+    <hr class="my-4">
+    {% if current_user.is_authenticated %}
+      <a class="btn btn-primary btn-lg" href="{{ url_for('main.quiz') }}" role="button" style="background-color: #493d96;" style="border-color: #493d96;">Take the quiz</a>
+      <a class="btn btn-secondary btn-lg" href="{{ url_for('main.stats') }}" role="button" style="background-color: #368aae;" style="border-color: #368aae;">View your stats</a>
+    {% else %}
+      <a class="btn btn-primary btn-lg" href="{{ url_for('main.register') }}" role="button">Join now</a>
+      <a class="btn btn-secondary btn-lg" href="{{ url_for('main.login') }}" role="button">Login</a>
+    {% endif %}
+</div>
+
+<!--To embed an image or an infographic:
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ url_for('static', filename='img/physics-quiz.jpg') }}" alt="Constellation" class="img-fluid">
+        </div>
+    </div>
+</div>
+{% endblock %} -->

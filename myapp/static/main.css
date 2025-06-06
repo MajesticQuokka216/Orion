@@ -1,0 +1,18 @@
+/* home.html */
+
+
+
+/* quiz.html */
+
+.btn-outline-primary {
+    color: #493d96;             /* Text color */
+    border-color: #493d96 !important;      /* Border color */
+    background-color: transparent;
+}
+
+/* Change the hover state of outline button */
+.btn-outline-primary:hover {
+    background-color: #493d96;  /* Fill color on hover */
+    color: #ffffff;             /* Text color when hovered */
+    border-color: #493d96 !important;      /* Optional: you can change the border color too */
+}

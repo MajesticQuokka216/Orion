@@ -12,7 +12,7 @@ main = Blueprint('main', __name__)
 @main.route("/")
 @main.route("/home")
 def home():
-    return render_template("home.html")  # You already have home.html
+    return render_template("home.html")
 
 @main.route("/register", methods=['GET', 'POST'])
 def register():
@@ -54,7 +54,6 @@ def logout():
 
 # ------------------------------------------------------------------
 # QUIZ ROUTE AND HELPER FUNCTIONALITY BELOW
-# ------------------------------------------------------------------
 
 # Helper function to load questions from CSV
 def load_questions():
