@@ -69,11 +69,11 @@ def load_questions():
             questions.append(cleaned_row)
     return questions
 
-# Revised Quiz Route with Minimal, Clean Session Data
+# Revised Quiz Route with Endless Quiz and an Exit Button
 @main.route("/quiz", methods=["GET", "POST"])
 @login_required
 def quiz():
-    # If starting a new quiz session, load questions and store only minimal needed data.
+    # Load questions if not already in session
     if "quiz_questions" not in session:
         raw_questions = load_questions()
         simple_questions = []
@@ -86,7 +86,7 @@ def quiz():
                 q.get("option_c", ""),
                 q.get("option_d", "")
             ]
-            # Determine the correct answer text. 
+            # Determine the correct answer text. If correct_answer is A-D then pick the corresponding option.
             correct_answer_raw = q.get("correct_answer", "").strip()
             if correct_answer_raw.upper() in ["A", "B", "C", "D"]:
                 mapping_index = {"A": 0, "B": 1, "C": 2, "D": 3}
@@ -111,21 +111,30 @@ def quiz():
     idx = session.get("current_question_idx", 0)
     questions = session.get("quiz_questions")
 
-    # If we've exhausted all questions, clear quiz session data
+    # Endless Quiz Logic:
     if idx >= len(questions):
-        session.pop("quiz_questions", None)
-        session.pop("current_question_idx", None)
-        session.pop("last_feedback", None)
-        flash("Quiz Finished!")
-        return redirect(url_for('main.home'))
+        flash("You've answered all questions! Restarting the quiz.", "info")
+        random.shuffle(questions)
+        session["quiz_questions"] = questions
+        session["current_question_idx"] = 0
+        idx = 0
 
     current_q = questions[idx]
 
-    # Randomize the display order of the options.
+    # Randomize the order of the options.
     randomized_answers = current_q["options"].copy()
     random.shuffle(randomized_answers)
 
     if request.method == "POST":
+        # Check if the user clicked the "Exit" button.
+        if "exit" in request.form:
+            session.pop("quiz_questions", None)
+            session.pop("current_question_idx", None)
+            session.pop("last_feedback", None)
+            flash("You have exited the quiz.")
+            return redirect(url_for("main.home"))
+
+        # Process the submitted answer.
         selected_answer = request.form.get("answer")
         explanation = current_q["explanation"]
         if selected_answer == current_q["correct_answer"]:
