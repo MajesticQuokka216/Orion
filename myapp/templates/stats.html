@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h1>User Stats</h1>
+    <div class="card">
+        <div class="card-body">
+            <p><strong>Total Questions Answered:</strong> {{ stats.total }}</p>
+            <p><strong>Correct Answers:</strong> {{ stats.correct }}</p>
+            <p><strong>Incorrect Answers:</strong> {{ stats.incorrect }}</p>
+            {% if stats.total > 0 %}
+            <p><strong>Accuracy:</strong> {{ (stats.correct / stats.total * 100) | round(2) }}%</p>
+            {% else %}
+            <p><strong>Accuracy:</strong> N/A</p>
+            {% endif %}
+        </div>
+    </div>
+    <a href="{{ url_for('main.home') }}" class="btn btn-primary mt-3">Back to Home</a>
+</div>
+{% endblock %}
