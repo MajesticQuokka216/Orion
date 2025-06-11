@@ -6,13 +6,10 @@ from .models import User
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=8, max=20)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password', validators=[
-        DataRequired(),
-        EqualTo('password', message='Passwords do not match. Please re-enter both password fields.')
-    ])
-    submit = SubmitField('Sign Up')
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=100)])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8, max=50)])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), Length(min=8, max=50), EqualTo('password', message='Passwords do not match. Please re-enter both password fields.')])
+    submit = SubmitField('Register')
 
     # Custom validator for username uniqueness
     def validate_username(self, username):

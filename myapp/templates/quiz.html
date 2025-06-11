@@ -1,18 +1,19 @@
+<!-- templates/quiz.html -->
 {% extends "base.html" %}
 {% block content %}
 <div class="quiz-container">
     {% if feedback %}
-        <!-- Show the feedback from the previous question -->
+        <!-- Show feedback from the previous question -->
         <div class="feedback">
             <h2>{{ feedback }}</h2>
         </div>
         <!-- Two buttons: Next (GET) and Exit (POST) -->
-        <div class="button-container d-flex justify-content-between mt-3">
+        <div class="button-container">
             <form method="get" action="{{ url_for('main.quiz') }}">
-                <button type="submit" class="btn btn-primary">Next</button>
+                <button type="submit" class="next-button">Next</button>
             </form>
             <form method="post" action="{{ url_for('main.quiz') }}">
-                <button type="submit" name="exit" value="true" class="btn btn-danger">Exit Quiz</button>
+                <button type="submit" name="exit" value="true" class="exit-button">Exit Quiz</button>
             </form>
         </div>
     {% else %}
@@ -23,7 +24,7 @@
         <form method="post" action="{{ url_for('main.quiz') }}">
             <div class="answers">
                 {% for answer in answers %}
-                    <button type="submit" name="answer" value="{{ answer }}" class="btn btn-outline-primary btn-block my-2">
+                    <button type="submit" name="answer" value="{{ answer }}" class="answer-button">
                         {{ answer }}
                     </button>
                 {% endfor %}

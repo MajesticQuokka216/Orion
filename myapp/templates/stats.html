@@ -1,9 +1,10 @@
+<!-- templates/stats.html -->
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-4">
+<div class="stats-container">
     <h1>User Stats</h1>
-    <div class="card">
-        <div class="card-body">
+    <div class="stats-card">
+        <div class="stats-card-body">
             <p><strong>Total Questions Answered:</strong> {{ stats.total }}</p>
             <p><strong>Correct Answers:</strong> {{ stats.correct }}</p>
             <p><strong>Incorrect Answers:</strong> {{ stats.incorrect }}</p>
@@ -14,6 +15,6 @@
             {% endif %}
         </div>
     </div>
-    <a href="{{ url_for('main.home') }}" class="btn btn-primary mt-3">Back to Home</a>
+    <a href="{{ url_for('main.home') }}" class="home-button">Back to Home</a>
 </div>
 {% endblock %}
