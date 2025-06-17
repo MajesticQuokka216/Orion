@@ -4,43 +4,28 @@
 {% block content %}
 <div class="stats-container" style="max-width: 800px; margin: auto;">
 
-  <h1 class="mt-4 mb-3 text-center">Your Quiz Stats</h1>
+  <h1 class="mt-4 mb-3 text-center">Your Stats</h1>
 
   <!-- Summary Cards -->
-  <div class="row mb-4">
-    <div class="col-md-3">
-      <div class="card text-white bg-primary mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Quizzes Taken</h5>
-          <p class="card-text display-4">{{ total_quizzes }}</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card text-white bg-success mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Total Correct</h5>
-          <p class="card-text display-4">{{ total_correct }}</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card text-white bg-danger mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Total Incorrect</h5>
-          <p class="card-text display-4">{{ total_incorrect }}</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card text-white bg-info mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Avg. Accuracy</h5>
-          <p class="card-text display-4">{{ avg_accuracy }}%</p>
-        </div>
-      </div>
-    </div>
+ <div class="dashboard-container">
+  <div class="stat-card">
+    <h5>Quizzes Taken</h5>
+    <p>{{ total_quizzes }}</p>
   </div>
+  <div class="stat-card">
+    <h5>Total Correct</h5>
+    <p>{{ total_correct }}</p>
+  </div>
+  <div class="stat-card">
+    <h5>Total Incorrect</h5>
+    <p>{{ total_incorrect }}</p>
+  </div>
+  <div class="stat-card">
+    <h5>Avg. Accuracy</h5>
+    <p>{{ avg_accuracy }}%</p>
+  </div>
+</div>
+
 
   <!-- Chart -->
   <div class="card mb-4">
@@ -51,7 +36,7 @@
   </div>
 
   <div class="text-center">
-    <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">
+    <a href="{{ url_for('main.home') }}" class="custom-button home-button">
       ← Back to Home
     </a>
   </div>
@@ -78,7 +63,7 @@
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         tension: 0.2,
         fill: true,
-        pointRadius: 3
+        pointRadius: 4
       }]
     },
     options: {
@@ -86,10 +71,24 @@
         y: {
           beginAtZero: true,
           max: 100,
-          title: { display: true, text: 'Accuracy (%)' }
+          title: {
+            display: true,
+            text: 'Accuracy (%)',
+            color: '#ffffff'
+          },
+          ticks: {
+            color: '#ffffff'
+          }
         },
         x: {
-          title: { display: true, text: 'Date / Time' }
+          title: {
+            display: true,
+            text: 'Date / Time',
+            color: '#ffffff'
+          },
+          ticks: {
+            color: '#ffffff'
+          }
         }
       },
       plugins: {
