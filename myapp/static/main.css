@@ -272,6 +272,7 @@ body {
 .stats-card-body p {
   font-size: 16px;
   margin: 6px 0;
+  color: black;
 }
 
 .home-button {

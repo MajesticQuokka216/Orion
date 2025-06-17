@@ -1,20 +1,106 @@
 <!-- templates/stats.html -->
 {% extends "base.html" %}
+
 {% block content %}
-<div class="stats-container">
-    <h1>User Stats</h1>
-    <div class="stats-card">
-        <div class="stats-card-body">
-            <p><strong>Total Questions Answered:</strong> {{ stats.total }}</p>
-            <p><strong>Correct Answers:</strong> {{ stats.correct }}</p>
-            <p><strong>Incorrect Answers:</strong> {{ stats.incorrect }}</p>
-            {% if stats.total > 0 %}
-            <p><strong>Accuracy:</strong> {{ (stats.correct / stats.total * 100) | round(2) }}%</p>
-            {% else %}
-            <p><strong>Accuracy:</strong> N/A</p>
-            {% endif %}
+<div class="stats-container" style="max-width: 800px; margin: auto;">
+
+  <h1 class="mt-4 mb-3 text-center">Your Quiz Stats</h1>
+
+  <!-- Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-white bg-primary mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Quizzes Taken</h5>
+          <p class="card-text display-4">{{ total_quizzes }}</p>
         </div>
+      </div>
     </div>
-    <a href="{{ url_for('main.home') }}" class="home-button">Back to Home</a>
+    <div class="col-md-3">
+      <div class="card text-white bg-success mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Total Correct</h5>
+          <p class="card-text display-4">{{ total_correct }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-danger mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Total Incorrect</h5>
+          <p class="card-text display-4">{{ total_incorrect }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-info mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Avg. Accuracy</h5>
+          <p class="card-text display-4">{{ avg_accuracy }}%</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="card mb-4">
+    <div class="card-header">Accuracy Over Time</div>
+    <div class="card-body">
+      <canvas id="accuracyChart" height="100"></canvas>
+    </div>
+  </div>
+
+  <div class="text-center">
+    <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">
+      ← Back to Home
+    </a>
+  </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Parse the JSON-encoded data passed from your view
+  const chartData = JSON.parse(`{{ chart_data|safe }}`);
+
+  const ctx = document
+    .getElementById('accuracyChart')
+    .getContext('2d');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chartData.labels,
+      datasets: [{
+        label: 'Accuracy (%)',
+        data: chartData.data,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.2,
+        fill: true,
+        pointRadius: 3
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100,
+          title: { display: true, text: 'Accuracy (%)' }
+        },
+        x: {
+          title: { display: true, text: 'Date / Time' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.parsed.y}%`
+          }
+        }
+      }
+    }
+  });
+</script>
 {% endblock %}

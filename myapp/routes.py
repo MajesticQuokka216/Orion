@@ -1,10 +1,11 @@
 import os
 import csv
 import random
+import json
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, login_required, current_user
 from .forms import RegistrationForm, LoginForm
-from .models import User
+from .models import User, QuizAttempt
 from .extensions import db, bcrypt
 
 main = Blueprint('main', __name__)
@@ -55,25 +56,20 @@ def logout():
 # ------------------------------------------------------------------
 # QUIZ ROUTE AND HELPER FUNCTIONALITY BELOW
 
-# Helper function to load questions from CSV
 def load_questions():
     csv_path = os.path.join(os.path.dirname(__file__), 'static', 'questions.csv')
     questions = []
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            # Clean each value: if it's None, replace it with an empty string,
-            # and otherwise force it to be a string.
             cleaned_row = {k: (str(v).strip() if v is not None else "") for k, v in row.items()}
             questions.append(cleaned_row)
     return questions
 
-# Revised Quiz Route with Endless Quiz, an Exit Button, and Stats Tracking
 @main.route("/quiz", methods=["GET", "POST"])
 @login_required
 def quiz():
     # Initialize stats in session if not already present.
-    # Stats dictionary tracks total answers, correct answers, and incorrect answers.
     if "stats" not in session:
         session["stats"] = {"total": 0, "correct": 0, "incorrect": 0}
 
@@ -83,18 +79,16 @@ def quiz():
         simple_questions = []
         for q in raw_questions:
             question_text = q.get("question", "")
-            # Build options list from CSV columns: option_a, option_b, option_c, option_d
             options = [
                 q.get("option_a", ""),
                 q.get("option_b", ""),
                 q.get("option_c", ""),
                 q.get("option_d", "")
             ]
-            # Determine the correct answer text.
             correct_answer_raw = q.get("correct_answer", "").strip()
             if correct_answer_raw.upper() in ["A", "B", "C", "D"]:
                 mapping_index = {"A": 0, "B": 1, "C": 2, "D": 3}
-                index = mapping_index.get(correct_answer_raw.upper(), 0)
+                index = mapping_index[correct_answer_raw.upper()]
                 correct_answer = options[index]
             else:
                 correct_answer = correct_answer_raw
@@ -107,7 +101,7 @@ def quiz():
                 "explanation": str(explanation).strip()
             }
             simple_questions.append(simple_q)
-        
+
         random.shuffle(simple_questions)
         session["quiz_questions"] = simple_questions
         session["current_question_idx"] = 0
@@ -124,23 +118,34 @@ def quiz():
         idx = 0
 
     current_q = questions[idx]
-
-    # Randomize the options order.
     randomized_answers = current_q["options"].copy()
     random.shuffle(randomized_answers)
 
     if request.method == "POST":
         # Exit button functionality.
         if "exit" in request.form:
+            # Persist quiz-attempt to the database
+            stats = session.get("stats", {"total": 0, "correct": 0, "incorrect": 0})
+            if stats["total"] > 0:
+                attempt = QuizAttempt(
+                    user_id=current_user.id,
+                    correct_count=stats["correct"],
+                    total_count=stats["total"]
+                )
+                db.session.add(attempt)
+                db.session.commit()
+
+            # Clear quiz session data
             session.pop("quiz_questions", None)
             session.pop("current_question_idx", None)
             session.pop("last_feedback", None)
-            flash("You have exited the quiz.")
+            session.pop("stats", None)
+
+            flash("You have exited the quiz and your attempt was saved.", "info")
             return redirect(url_for("main.home"))
 
         # Process the answer.
         selected_answer = request.form.get("answer")
-        # Update stats.
         stats = session.get("stats", {"total": 0, "correct": 0, "incorrect": 0})
         stats["total"] += 1
         if selected_answer == current_q["correct_answer"]:
@@ -164,9 +169,40 @@ def quiz():
 # ------------------------------------------------------------------
 # STATS ROUTE
 # ------------------------------------------------------------------
+
 @main.route("/stats")
 @login_required
 def stats():
-    # Retrieve the stats from the session. If none exist, set defaults.
-    stats = session.get("stats", {"total": 0, "correct": 0, "incorrect": 0})
-    return render_template("stats.html", stats=stats)
+    # 1) Fetch all attempts for this user, ordered by timestamp
+    attempts = (
+        QuizAttempt.query
+                   .filter_by(user_id=current_user.id)
+                   .order_by(QuizAttempt.taken_on)
+                   .all()
+    )
+
+    # 2) Compute aggregate stats
+    total_quizzes   = len(attempts)
+    total_correct   = sum(a.correct_count for a in attempts)
+    total_incorrect = sum((a.total_count - a.correct_count) for a in attempts)
+    avg_accuracy    = (
+        round(sum(a.accuracy for a in attempts) / total_quizzes, 1)
+        if total_quizzes else 0
+    )
+
+    # 3) Prepare data for Chart.js
+    labels = [a.taken_on.strftime("%Y-%m-%d %H:%M") for a in attempts]
+    data   = [a.accuracy for a in attempts]
+    chart_data = json.dumps({
+        'labels': labels,
+        'data':   data
+    })
+
+    return render_template(
+        "stats.html",
+        total_quizzes=total_quizzes,
+        total_correct=total_correct,
+        total_incorrect=total_incorrect,
+        avg_accuracy=avg_accuracy,
+        chart_data=chart_data
+    )
