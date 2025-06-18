@@ -2,23 +2,17 @@
 {% block content %}
 <div class="hero-section">
     <h1 class="main-title">Welcome to Orion!</h1>
-    <p class="subtitle">Test your knowledge on Physics Module 8</p>
+    
 
     {% if current_user.is_authenticated %}
-      <a class="custom-button quiz-button" href="{{ url_for('main.quiz') }}">Take the quiz</a>
+    <p class="subtitle">Test your knowledge on Physics Module 8</p>  
+    <a class="custom-button quiz-button" href="{{ url_for('main.quiz') }}">Take the quiz</a>
       <a class="custom-button stats-button" href="{{ url_for('main.stats') }}">View your stats</a>
     {% else %}
+      <p class="subtitle">Log in to access the quiz. No account? Join now!</p>
       <a class="custom-button register-button" href="{{ url_for('main.register') }}">Join now</a>
       <a class="custom-button login-button" href="{{ url_for('main.login') }}">Login</a>
     {% endif %}
 </div>
 
-<!--To embed an image or an infographic:
-<div class="container">
-    <div class="row">
-        <div class="col-md-6">
-            <img src="{{ url_for('static', filename='img/physics-quiz.jpg') }}" alt="Constellation" class="img-fluid">
-        </div>
-    </div>
-</div> -->
 {% endblock %}
